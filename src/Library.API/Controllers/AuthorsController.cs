@@ -16,7 +16,7 @@
     using Microsoft.AspNetCore.Mvc;
 
     [Route("api/authors")]
-    public class AuthorsController
+    public class AuthorsController : Controller
     {
         private ILibraryRepository libraryRepository;
 
@@ -31,11 +31,17 @@
         {
             var authorsfromRepo = this.libraryRepository.GetAuthors();
             var authors = Mapper.Map<IEnumerable<AuthorDto>>(authorsfromRepo);
+            return Ok(authors);
 
+        }
 
+        [HttpGet("{id}")]
+        public IActionResult GetAuthor(Guid id)
+        {
+            var authorFromRepo = this.libraryRepository.GetAuthor(id);
+            var author = Mapper.Map<AuthorDto>(authorFromRepo);
+            return new JsonResult(author);
 
-
-            return new JsonResult(authors);
         }
 
 
