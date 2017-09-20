@@ -4,6 +4,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Linq.Expressions;
     using System.Runtime.InteropServices.ComTypes;
     using System.Threading.Tasks;
 
@@ -29,16 +30,23 @@
         [HttpGet()]
         public IActionResult GetAuthors()
         {
-            var authorsfromRepo = this.libraryRepository.GetAuthors();
-            var authors = Mapper.Map<IEnumerable<AuthorDto>>(authorsfromRepo);
-            return Ok(authors);
+          
 
+                var authorsFromRepo = this.libraryRepository.GetAuthors();
+                var authors = Mapper.Map<IEnumerable<AuthorDto>>(authorsFromRepo);
+                return this.Ok(authors);
+           
+                return this.StatusCode(500, "This is an error");
         }
 
         [HttpGet("{id}")]
         public IActionResult GetAuthor(Guid id)
         {
             var authorFromRepo = this.libraryRepository.GetAuthor(id);
+            if (authorFromRepo == null)
+            {
+                return this.NotFound();
+            }
             var author = Mapper.Map<AuthorDto>(authorFromRepo);
             return new JsonResult(author);
 

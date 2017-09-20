@@ -60,7 +60,17 @@ namespace Library.API
             }
             else
             {
-                app.UseExceptionHandler();
+                // TODO This is how to do generic logging to the client.
+                app.UseExceptionHandler(
+                    appBuilder =>
+                        {
+                            appBuilder.Run(
+                                async context =>
+                                    {
+                                        context.Response.StatusCode = 500;
+                                        await context.Response.WriteAsync("An error happened");
+                                    });
+                        });
             }
             
             AutoMapper.Mapper.Initialize(
@@ -69,7 +79,11 @@ namespace Library.API
                         cfg.CreateMap<Entities.Author, Models.AuthorDto>()
                             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"))
                             .ForMember(dest => dest.Age, opt => opt.MapFrom(src => src.DateOfBirth.GetCurrentAge()));
+
+                        cfg.CreateMap<Entities.Book, Models.BooksDto>();
                     });
+
+
             libraryContext.EnsureSeedDataForContext();
 
             app.UseMvc(); 
