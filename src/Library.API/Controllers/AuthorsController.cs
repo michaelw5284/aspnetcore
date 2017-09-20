@@ -7,6 +7,8 @@
     using System.Runtime.InteropServices.ComTypes;
     using System.Threading.Tasks;
 
+    using AutoMapper;
+
     using Library.API.Models;
     using Library.API.Services;
     using Library.API.Helpers;
@@ -28,19 +30,11 @@
         public IActionResult GetAuthors()
         {
             var authorsfromRepo = this.libraryRepository.GetAuthors();
-            var authors = new List<AuthorDto>();
+            var authors = Mapper.Map<IEnumerable<AuthorDto>>(authorsfromRepo);
 
 
-            foreach (var author in authorsfromRepo)
-            {
-                authors.Add(new AuthorDto()
-                {
-                    Id = author.Id,
-                    Name = $"{author.FirstName} {author.LastName}",
-                    Age = author.DateOfBirth.GetCurrentAge(),
-                    Genre = author.Genre
-                });
-            }
+
+
             return new JsonResult(authors);
         }
 
