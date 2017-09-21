@@ -15,6 +15,7 @@
     using Library.API.Helpers;
 
     using Microsoft.AspNetCore.Mvc;
+    using Library.API.Entities;
 
     [Route("api/authors")]
     public class AuthorsController : Controller
@@ -30,16 +31,16 @@
         [HttpGet()]
         public IActionResult GetAuthors()
         {
-          
 
-                var authorsFromRepo = this.libraryRepository.GetAuthors();
-                var authors = Mapper.Map<IEnumerable<AuthorDto>>(authorsFromRepo);
-                return this.Ok(authors);
-           
-                return this.StatusCode(500, "This is an error");
+
+            var authorsFromRepo = this.libraryRepository.GetAuthors();
+            var authors = Mapper.Map<IEnumerable<AuthorDto>>(authorsFromRepo);
+            return this.Ok(authors);
+
+            return this.StatusCode(500, "This is an error");
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "GetAuthor")]
         public IActionResult GetAuthor(Guid id)
         {
             var authorFromRepo = this.libraryRepository.GetAuthor(id);
@@ -50,6 +51,33 @@
             var author = Mapper.Map<AuthorDto>(authorFromRepo);
             return new JsonResult(author);
 
+        }
+
+        // INFO Create an author together with a list of books - see the repository and the DTO
+        [HttpPost]
+        public IActionResult CreateAuthor([FromBody] AuthorForCreationDto author)
+        {
+            if (author == null)
+            {
+                return this.BadRequest();
+            }
+
+            var authorEntity = Mapper.Map<Author>(author);
+
+            this.libraryRepository.AddAuthor(authorEntity);
+            if (!this.libraryRepository.Save())
+            {
+
+                // INFO - could do this either way.  Throw is handed in middleware
+                throw new Exception("Creating author failed");
+
+                // return this.StatusCode(500, "A problem happened and could not save");
+            }
+            var authorToReturn = Mapper.Map<AuthorDto>(authorEntity);
+
+            // INFO - how to return the route of a created entity
+            return this.CreatedAtRoute("GetAuthor", new { id = authorToReturn.Id }, authorToReturn);
+       
         }
 
 
